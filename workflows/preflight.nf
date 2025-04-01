@@ -19,7 +19,7 @@ workflow PreFlight{
             ref_index_ch = CreateIndex(params.Target_Reference)
         }
         if( params.Host_Indexed){
-            host_index_ch = GetIndex(params.Host_IndexFolder, params.Host_Reference)
+            GetIndex(params.Host_IndexFolder, params.Host_Reference)
         } else {
             if(params.Host_Reference){
                 if ( params.Seq_Tech == "Illumina") {
@@ -46,7 +46,7 @@ workflow PreFlight{
     emit:
         SnpEff_config = SetSnpEff.out.ifEmpty("EMPTY")
         Target_Reference = ref_index_ch
-        Host_bwa = params.Host_Indexed? host_index_ch.out.bwa_index_ch.ifEmpty("EMPTY") : host_index_ch
-        Host_minimap = params.Host_Indexed? host_index_ch.out.minimap_index_ch.ifEmpty("EMPTY") : host_index_ch
+        Host_bwa = params.Host_Indexed? GetIndex.out.bwa_index_ch : host_index_ch
+        Host_minimap = params.Host_Indexed? GetIndex.out.minimap_index_ch : host_index_ch
         Primers = primer_locs_ch.ifEmpty("EMPTY")
 }

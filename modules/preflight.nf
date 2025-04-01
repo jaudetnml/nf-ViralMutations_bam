@@ -59,8 +59,8 @@ process GetIndex {
     val referenceName
 
     output:
-    tuple path("${referenceName}.amb"), path("${referenceName}.ann"), path("${referenceName}.amb"), path("${referenceName}.bwt"), path("${referenceName}.pac"), path("${referenceName}.sa"), optional: true, emit: bwa_index_ch
-    tuple path("${referenceName}.mmi"), optional: true, emit: minimap_index_ch
+    tuple path("${referenceName}.amb"), path("${referenceName}.ann"), path("${referenceName}.bwt"), path("${referenceName}.pac"), path("${referenceName}.sa"), optional: true, emit: bwa_index_ch
+    path("${referenceName}.mmi"), optional: true, emit: minimap_index_ch
 
     script:
     """
