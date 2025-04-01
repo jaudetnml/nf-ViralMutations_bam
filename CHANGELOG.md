@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Release 1.0.1 - 2025-04-01
+
+### Fixes
+- Fixed the issue related to Fastqc running out of memory
+- Fixed an issue where the minimum number of lines output from FreeBayes was too low and allowed empty files (header only) to be pushed to the next processes.
+- Fixed an issue collecting a pre-indexed host genome didn't work due to too many output files in the output tuple (one was duplicated)
+  - Fixed an issue where the subworkflow was doing an `ifEmpty` check on the GetIndex output and the single value passed was triggering bad behaviour
+
 ## Release 1.0.0 - 2025-01-28
 
 ### Major changes
