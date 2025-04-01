@@ -14,12 +14,12 @@ process Fq_QC {
     script:
     if (params.Seq_Tech == "Illumina") {
         """
-                fastqc ${reads[0]} ${reads[1]}
+                fastqc -memory=10000 ${reads[0]} ${reads[1]}
             """
     }
     else {
         """
-                fastqc ${reads}
+                fastqc -memory=10000 ${reads}
             """
     }
 }
