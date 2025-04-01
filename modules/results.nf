@@ -17,7 +17,7 @@ process SnpCall {
             freebayes -b ${bam} -f ${reference} --pooled-continuous -v ${Name}_variants.vcf -p 1 -B 3 -E -1 -F 0.005 --min-coverage 2
             
             num_lines=\$( wc -l ${Name}_variants.vcf | cut -f1 -d ' ' )
-            if [ \$num_lines -lt 62 ]; then
+            if [ \$num_lines -lt 65 ]; then
                 rm ${Name}_variants.vcf
             fi
         """
@@ -27,7 +27,7 @@ process SnpCall {
             freebayes -b ${bam} -f ${reference} --pooled-continuous -v ${Name}_variants.vcf -m ${params.Read_MinMAPQ} -p 1 -B 3 -E -1 --haplotype-length -1 -F 0.03 --min-coverage 5
             
             num_lines=\$( wc -l ${Name}_variants.vcf | cut -f1 -d ' ' )
-            if [ \$num_lines -lt 62 ]; then
+            if [ \$num_lines -lt 65 ]; then
                 rm ${Name}_variants.vcf
             fi
         """
