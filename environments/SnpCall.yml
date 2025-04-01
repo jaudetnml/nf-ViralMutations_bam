@@ -1,0 +1,8 @@
+name: SnpCalling
+channels:
+    - conda-forge
+    - bioconda
+    - defaults
+dependencies:
+    - samtools
+    - freebayes

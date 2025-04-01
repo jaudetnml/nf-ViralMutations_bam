@@ -1,0 +1,11 @@
+name: Alignment
+channels:
+    - conda-forge
+    - bioconda
+    - defaults
+dependencies:
+    - samtools<1.18
+    - bwa
+    - minimap2
+    - bamclipper
+    - bcftools

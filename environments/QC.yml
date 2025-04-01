@@ -1,0 +1,11 @@
+name: QC
+channels:
+    - conda-forge
+    - bioconda
+    - defaults
+dependencies:
+    - samtools
+    - fastqc
+    - multiqc
+    - r-tidyverse
+    - r-ggrepel

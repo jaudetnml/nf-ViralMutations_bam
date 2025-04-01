@@ -1,0 +1,9 @@
+name: Trimming
+channels:
+    - conda-forge
+    - bioconda
+    - defaults
+dependencies:
+    - trim-galore
+    - porechop
+    - cutadapt
