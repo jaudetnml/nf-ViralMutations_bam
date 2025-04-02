@@ -64,29 +64,24 @@ Set the `Host_Reference` parameter to the __file name__ of the fasta sequence an
 
 ### Illumina adapter clipping
 
-Illumina adapter removal is performed using Trim-Galore!.
+Illumina adapter removal is performed using [fastp](https://github.com/OpenGene/fastp)/[fastplong](https://github.com/OpenGene/fastplong).
+Those tools also perform pre- and post-trimming read QC.
 It is possible to specify either the number of bases to clip from the 5' end of each base or the specific adapter sequences to trim (specify both).
+Custom trim arguments can be specified for both Illumina and MinION trimming.
+**Note that the rest of the pipeline is not designed to deal with merged reads, please do not activate this feature."
 
 To clip the first 14 bases from R2 (e.g. Takara stranded RNA prep, pico input): (YAML)
 
 ```YAML
-Illumina_clipR1: 0
-Illumina_clipR2: 14
+    TrimArgs: "--trim_front2 14"
 ```
 
-To trim specific adapters from each read (e.g. Zymo Stranded RNA kit): (JSON)
+To also trim specific adapters from each read (e.g. Zymo Stranded RNA kit): (JSON)
 
 ```JSON
 {
-    Illumina_adapt1: "NNNNNNNNNNAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
-    Illumina_adapt2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGA"
+    TrimArgs: "--trim_front2 10 --adapter_sequence NNNNNNNNNNAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter_sequence_r2 AGATCGGAAGAGCGTCGTGTAGGGAAAGA"
 }
-```
-
-If you need to trim only one adapter or to specify other trimming options (leave a space at the end): (YAML)
-
-```YAML
-Illumina_TrimArgs: "-a NNNNNNNNNNAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC "
 ```
 
 ### Alignment filtering
