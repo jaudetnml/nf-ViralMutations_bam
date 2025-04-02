@@ -38,7 +38,7 @@ process TrimIllumina {
 
     script:
     """
-         fastp -i ${reads[0]} -I ${reads[1]} -o ${Name}_val1.fq.gz -O ${Name}_val_2.fq.gz\
+         fastp -i ${reads[0]} -I ${reads[1]} -o ${Name}_val_1.fq.gz -O ${Name}_val_2.fq.gz\
           -j ${Name}_TrimReport.json -h ${Name}_TrimReport.html -w ${task.cpus} ${params.TrimArgs}
     """
 }
