@@ -3,7 +3,7 @@ process CombineMinIONFastq {
     tag { SampleName }
 
     input:
-    tuple val(SampleName), val(Barcode)
+    tuple val(SampleName), path(FOLDER)
 
     output:
     tuple val(SampleName), path("${SampleName}_combined.fastq.gz")
@@ -11,9 +11,9 @@ process CombineMinIONFastq {
     script:
     """
         if [[ "${params.Extension}" =~ .*gz ]]; then
-            gunzip -c ${params.Data_Folder}/${Barcode}/*${params.Extension} > ${SampleName}_combined.fastq
+            gunzip -c ${FOLDER}/*${params.Extension} > ${SampleName}_combined.fastq
         else
-            cat ${params.Data_Folder}/${Barcode}/*${params.Extension} > ${SampleName}_combined.fastq
+            cat ${FOLDER}/*${params.Extension} > ${SampleName}_combined.fastq
         fi
         gzip ${SampleName}_combined.fastq
     """
@@ -30,7 +30,7 @@ process TrimIllumina {
     publishDir "${params.Result_Folder}/${Name}/QC", pattern: "*.html", mode: 'copy'
 
     input:
-    tuple val(Name), file(reads)
+    tuple val(Name), file(reads1), file(reads2)
 
     output:
     tuple val(Name), file("${Name}_val_1.fq.gz"), file("${Name}_val_2.fq.gz"), emit: trim_reads_ch
@@ -38,7 +38,7 @@ process TrimIllumina {
 
     script:
     """
-         fastp -i ${reads[0]} -I ${reads[1]} -o ${Name}_val_1.fq.gz -O ${Name}_val_2.fq.gz\
+         fastp -i ${reads1} -I ${reads2} -o ${Name}_val_1.fq.gz -O ${Name}_val_2.fq.gz\
           -j ${Name}_TrimReport.json -h ${Name}_TrimReport.html -w ${task.cpus} ${params.TrimArgs}
     """
 }

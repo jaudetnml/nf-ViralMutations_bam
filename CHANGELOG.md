@@ -6,6 +6,12 @@
 - Switched read trimming to fastp/fastplong. These softwares also provide the pre- and post-trimming QC reports.
   - Since all arguments are named (rather than positional), a single process is sufficient to add custom features to the trimming
   - Since fastp/fastplong already provide QC reports (better ones than FastQC), the FastQC process was removed as well.
+- Switched input to a samplesheet.
+  - Passed to the `input` parameter, as per nf-core and IRIDA Next standards.
+  - Expects the 3 columns: `sample`,`fastq_1`,`fasq_2`
+    - For MinION, there is no `fastq_2` and `fastq_1` can point to a folder that contains multiple fastqs (if MinION_split is `true`)
+  - The parameter `Data_Folder` has been removed.
+- Added profiles to the config, which allows easy toggle of SLURM and between Singularity/Apptainer.
 
 ## Release 1.0.1 - 2025-04-01
 

@@ -7,10 +7,14 @@ include {
 workflow PreProcess {
     main:
     if (params.Seq_Tech == "MinION") {
+        trimmed_reads_ch = Channel.empty()
+
         if (params.MinION_split) {
-            channel.fromPath("${params.MinION_Samples}", type: 'file')
+            RawReadFolders_ch = Channel.empty()
+
+            channel.fromPath("${params.input}", type: 'file')
                 | splitCsv(header: true)
-                | map { row -> tuple(row.Sample_Name, row.Barcode)}
+                | map { row -> tuple(row.sample, file(row.fastq_1, type: 'dir', checkIfExists: true))}
                 | view()
                 | set { RawReadFolders_ch }
             CombineMinIONFastq(RawReadFolders_ch)
@@ -18,15 +22,25 @@ workflow PreProcess {
                 | set { trimmed_reads_ch }
         }
         else {
-            channel.fromPath("${params.Data_Folder}/*${params.Extension}", type: 'file')
+            MinION_reads_ch = Channel.empty()
+
+            channel.fromPath("${params.input}", type: 'file')
+                | splitCsv(header: true)
+                | map { row -> tuple(row.sample, file(row.fastq_1, checkIfExists: true))}
+                | view()
                 | set { MinION_reads_ch }
             TrimMinION(MinION_reads_ch)
                 | set { trimmed_reads_ch }
         }
     }
     else {
-        channel.fromFilePairs(["${params.Data_Folder}/**_R{1,2}_001${params.Extension}", "${params.Data_Folder}/**_R{1,2}${params.Extension}"], maxDepth: 2, syntax: "glob", type: "file")
-            | set { raw_reads_ch }
+        raw_reads_ch = Channel.empty()
+
+        channel.fromPath("${params.input}", type: 'file')
+                | splitCsv(header: true)
+                | map { row -> tuple(row.sample, file(row.fastq_1, checkIfExists: true), file(row.fastq_2, checkIfExists: true))}
+                | view()
+                | set { raw_reads_ch }
 
         trimmed_reads_ch = TrimIllumina(raw_reads_ch)
     }
