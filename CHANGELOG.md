@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Release 1.X.X - 2025-XX-XX
+
+### Changes
+- Switched read trimming to fastp/fastplong. These softwares also provide the pre- and post-trimming QC reports.
+  - Since all arguments are named (rather than positional), a single process is sufficient to add custom features to the trimming
+  - Since fastp/fastplong already provide QC reports (better ones than FastQC), the FastQC process was removed as well.
+
 ## Release 1.0.1 - 2025-04-01
 
 ### Fixes
