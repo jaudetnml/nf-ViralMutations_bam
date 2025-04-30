@@ -23,7 +23,7 @@ process UnalignSelect {
         'biocontainers/bwa:0.7.18--he4a0461_1'}"
     tag { Name }
     label 'EukAlignment'
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(read1), file(read2), path(amb_file), path(ann_file), path(bwt_file), path(pac_file), path(sa_file), path(Ref_fasta)
@@ -63,7 +63,7 @@ process MinIONAlign {
         'biocontainers/minimap2:2.28--he4a0461_3'}"
     tag { Name }
     label 'Alignment'
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(reads), path(FastaReference)
