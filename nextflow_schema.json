@@ -1,0 +1,221 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/phac-nml/mikrokondo/main/nextflow_schema.json",
+    "title": "phac-nml/mikrokondo pipeline parameters",
+    "description": "Mikrokondo",
+    "type": "object",
+    "definitions": {
+        "input_output_options": {
+            "title": "Input/output options",
+            "type": "object",
+            "fa_icon": "fas fa-terminal",
+            "description": "Define where the pipeline should find input data and save output data.",
+            "required": [
+                "input",
+                "outdir",
+                "Seq_Tech",
+                "MinION_Split"
+            ],
+            "properties": {
+                "input": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "schema": "assets/schema_input.json",
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
+                    "description": "Path to comma-separated file containing information about the samples in the experiment.",
+                    "help_text": "You will need to create a file with information about the samples in your experiment before running the pipeline.",
+                    "fa_icon": "fas fa-file-csv"
+                },
+                "outdir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
+                    "fa_icon": "fas fa-folder-open",
+                    "hidden": true,
+                    "pattern": "^\\S+$"
+                },
+                "Seq_Tech": {
+                    "type": "string",
+                    "default": "Illumina",
+                    "enum": [
+                        "Illumina",
+                        "MinION"
+                    ],
+                    "description": "Sequencing platform used"
+                },
+                "MinION_Split": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "True if the nanopore reads have not been collated (e.g. 1 folder per barcode with a bunch of fastq files in it)."
+                },
+                "Extension": {
+                    "type": "string",
+                    "default": ".fastq.gz",
+                    "description": "When MinION_Split is TRUE, specify the extension of the individual fastq files."
+                }
+            }
+        },
+        "target_reference_information": {
+            "title": "Target reference information",
+            "type": "object",
+            "default": "",
+            "properties": {
+                "Target_Reference": {
+                    "type": "string",
+                    "format": "file-path",
+                    "pattern": "^\\S+\\.f(ast|n)?a(\\.gz)?$",
+                    "exists": true,
+                    "description": "The path to the fasta file containing the target genome (can have multiple segments in the same file)."
+                },
+                "SnpEff_Name": {
+                    "type": "string",
+                    "description": "The name of the folder containing the snpEff data (sequence.fasta and genes.gbk)."
+                },
+                "SnpEff_Folder": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "exists": true,
+                    "description": "The path to the folder that contains the snpEff data folders. (i.e. the path to the parent folder of SnpEff_Name)"
+                },
+                "GenePos": {
+                    "type": "string",
+                    "format": "file-path",
+                    "pattern": "^\\S+\\.xlsx$",
+                    "exists": true,
+                    "description": "(Optional) The path to an Excel file containing some annotations to highlight in the variant graph."
+                }
+            },
+            "required": [
+                "Target_Reference",
+                "SnpEff_Name",
+                "SnpEff_Folder"
+            ],
+            "description": "The files and folders describing the target reference to align to."
+        },
+        "host_information": {
+            "title": "Host genome information (only if dehosting is required)",
+            "type": "object",
+            "properties": {
+                "Host_Reference": {
+                    "type": "string",
+                    "pattern": "^\\S+\\.f(ast|n)?a(\\.gz)?$",
+                    "description": "The name of the file which has the host genome."
+                },
+                "Host_Indexed": {
+                    "type": "boolean",
+                    "default": false,
+                    "desctiption": "Set to true if the host genome is already indexed (set the Host_IndexFolder) or false if the host genome needs to be indexed (set Host_IndexOutFolder)."
+                },
+                "Host_IndexFolder": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "exists": true,
+                    "description": "The folder where to find the index files for the host genome (e.g. *.fasta.mmi for MinION and the output files of BWA index for Illumina)."
+                },
+                "Host_IndexOutFolder": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "exists": false,
+                    "description": "If the genome is not already index, where to save the index files generated?"
+                }
+            },
+            "description": "The files and folders describing the host, if dehosting is desired."
+        },
+        "read_filtering_trimming": {
+            "title": "Read trimming and alignment filtering options.",
+            "type": "object",
+            "properties": {
+                "TrimArgs": {
+                    "type": "string",
+                    "description": "If you wish to add arguments to the fastp/fastplong command, add them here."
+                },
+                "Read_MinMAPQ": {
+                    "type": "integer",
+                    "default": 30,
+                    "description": "The minimum mapping quality for a read to be retained."
+                },
+                "Read_ExclFLAG": {
+                    "type": "integer",
+                    "default": 2304,
+                    "description": "The sum of the SAM Flag values for exclusion. A read with any of these flags will be filtered out. Default removes supplementary alignments and non-primary alignments."
+                }
+            }
+        },
+        "snp_consensus": {
+            "title": "Options that control the requirements to report SNPs and call consensus.",
+            "type": "object",
+            "properties": {
+                "Consensus_MinDepth": {
+                    "type": "integer",
+                    "default": 20,
+                    "description": "The minimum depth at a position for a consensus to be called. Position below this value will be \"N\""
+                },
+                "Consensus_MinFreq": {
+                    "type": "number",
+                    "default": 0.7,
+                    "description": "Minimum frequency of a SNP to make consensus."
+                },
+                "SNP_MaxCov": {
+                    "type": "integer",
+                    "default": -1,
+                    "description": "The maximum depth. Areas above this depth will be downsampled before SNP calling. Areas below this depth will not be affected. Defaults to -1, keeps all reads."
+                },
+                "SNP_MinDepth": {
+                    "type": "integer",
+                    "default": 20,
+                    "description": "The minimum depth for a SNP to be in the filtered reports."
+                },
+                "SNP_MinFreq": {
+                    "type": "number",
+                    "default": 0.05,
+                    "description": "The minimum frequency of a SNP to be reported in the filtered reports."
+                }
+            }
+        },
+        "pipeline_options": {
+            "title": "Options related to running the pipeline.",
+            "type": "object",
+            "properties": {
+                "SLURM_Queue": {
+                    "type": "string",
+                    "description": "The name of the SLURM partition to use for jobs."
+                },
+                "Singularity_cache": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "exists": true,
+                    "description": "The path to the folder where containers should be saved."
+                },
+                "max_cpus": {
+                    "type": "integer",
+                    "description": "Maximum number of CPUs that can be requested for any single job.",
+                    "default": 30,
+                    "fa_icon": "fas fa-microchip",
+                    "hidden": true,
+                    "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`",
+                    "minimum": 1
+                },
+                "max_memory": {
+                    "type": "string",
+                    "description": "Maximum amount of memory that can be requested for any single job.",
+                    "default": "2000.GB",
+                    "fa_icon": "fas fa-memory",
+                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
+                    "hidden": true,
+                    "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
+                },
+                "max_time": {
+                    "type": "string",
+                    "description": "Maximum amount of time that can be requested for any single job.",
+                    "default": "240.h",
+                    "fa_icon": "far fa-clock",
+                    "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
+                    "hidden": true,
+                    "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
+                }
+            }
+        }
+    }
+}
