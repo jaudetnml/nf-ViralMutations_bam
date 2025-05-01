@@ -3,7 +3,8 @@ process SnpCall {
         'https://depot.galaxyproject.org/singularity/freebayes:1.3.8--h6a68c12_2' :
         'biocontainers/freebayes:1.3.8--h6a68c12_2'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", pattern: "${Name}_variants.vcf", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", pattern: "${Name}_variants.vcf", mode: 'copy'
 
     input:
     tuple val(Name), file(bam), file(bai), file(reference)
@@ -37,8 +38,9 @@ process SnpCall {
 process MakeNiceVCF {
     container 'docker://rocker/tidyverse:latest'
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", pattern: "${Name}_clean.vcf", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC", pattern: "${Name}_consensus.vcf", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", pattern: "${Name}_clean.vcf", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC", pattern: "${Name}_consensus.vcf", mode: 'copy'
 
     input:
     tuple val(Name), file(freebayes_vcf), file(basic_header)
@@ -62,8 +64,9 @@ process SnpEff {
         'https://depot.galaxyproject.org/singularity/snpeff:5.2--hdfd78af_1' :
         'biocontainers/snpeff:5.2--hdfd78af_1'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC/Raw", pattern: "${Name}_snpEff.csv", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC/Raw", pattern: "${Name}_snpEff.csv", mode: 'copy'
 
     input:
     tuple val(Name), file(vcf), file(snpEff_cfg), path(snpEff_folder)
@@ -92,7 +95,8 @@ process SnpEff {
 
 process FilterVCF {
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(vcf), file(mis_vcf), file(stop_vcf), file(updown_vcf), file(html), file(filterFile)
@@ -111,7 +115,8 @@ process Consensus {
         'https://depot.galaxyproject.org/singularity/bcftools:1.21--h8b25389_0' :
         'biocontainers/bcftools:1.21--h8b25389_0'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(variants), file(depths), file(reference)
@@ -134,7 +139,8 @@ process Variant_Plot {
         'https://depot.galaxyproject.org/singularity/mulled-v2-ae2aedaf90918321f3e23bf48366c58c84aa4aa1:be6189ed69d26e8c2c00eaf8e8c9624f6b1c683f-0' :
         'biocontainers/mulled-v2-ae2aedaf90918321f3e23bf48366c58c84aa4aa1:be6189ed69d26e8c2c00eaf8e8c9624f6b1c683f-0'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(depths), file(variants_annot), file(geneName)

@@ -3,7 +3,7 @@ process AlignSelect {
         'https://depot.galaxyproject.org/singularity/bwa:0.7.18--he4a0461_1' :
         'biocontainers/bwa:0.7.18--he4a0461_1'}"
     tag { Name }
-    label 'Alignment'
+    label 'process_high'
 
     input:
     tuple val(Name), file(read1), file(read2), path(amb_file), path(ann_file), path(bwt_file), path(pac_file), path(sa_file), path(Ref_fasta)
@@ -22,8 +22,8 @@ process UnalignSelect {
         'https://depot.galaxyproject.org/singularity/bwa:0.7.18--he4a0461_1' :
         'biocontainers/bwa:0.7.18--he4a0461_1'}"
     tag { Name }
-    label 'EukAlignment'
-    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
+    label 'process_high'
+    publishDir "${params.outdir}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(read1), file(read2), path(amb_file), path(ann_file), path(bwt_file), path(pac_file), path(sa_file), path(Ref_fasta)
@@ -42,8 +42,8 @@ process UnalignExtract {
         'https://depot.galaxyproject.org/singularity/samtools:1.17--hd87286a_2' :
         'biocontainers/samtools:1.17--hd87286a_2'}"
     tag { Name }
-    label 'Alignment'
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_medium'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(samfile)
@@ -62,8 +62,8 @@ process MinIONAlign {
         'https://depot.galaxyproject.org/singularity/minimap2:2.28--he4a0461_3' :
         'biocontainers/minimap2:2.28--he4a0461_3'}"
     tag { Name }
-    label 'Alignment'
-    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
+    label 'process_high'
+    publishDir "${params.outdir}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(reads), path(FastaReference)
@@ -82,8 +82,8 @@ process MinIONUnalignSelect {
         'https://depot.galaxyproject.org/singularity/minimap2:2.28--he4a0461_3' :
         'biocontainers/minimap2:2.28--he4a0461_3'}"
     tag { Name }
-    label 'EukAlignment'
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_high'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(reads), path(mmi_file)
@@ -102,8 +102,8 @@ process MinIONUnalignExtract {
         'https://depot.galaxyproject.org/singularity/samtools:1.17--hd87286a_2' :
         'biocontainers/samtools:1.17--hd87286a_2'}"
     tag { Name }
-    label 'Alignment'
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_medium'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(samfile)
@@ -122,8 +122,8 @@ process Sort_Index {
         'https://depot.galaxyproject.org/singularity/samtools:1.17--hd87286a_2' :
         'biocontainers/samtools:1.17--hd87286a_2'}"
     tag { Name }
-    label 'Alignment'
-    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
+    label 'process_low'
+    publishDir "${params.outdir}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(samfile)
