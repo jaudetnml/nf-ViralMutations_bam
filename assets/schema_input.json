@@ -1,0 +1,48 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/phac-nml/nf-ViralMutations/master/assets/schema_input.json",
+    "title": "Samplesheet schema validation",
+    "description": "Schema for the file provided with params.input",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "sample": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "meta": ["external_id"],
+                "errorMessage": "Sample name to be used in report generation. Valid characters include alphanumeric and -. All other characters will be replaced by underscores."
+            },
+            "sample_name": {
+                "type": "string",
+                "errorMessage": "Optional. Used to override sample when used in tools like IRIDA-Next. Valid characters include alphanumeric and -. All other characters will be replaced by underscores.",
+                "meta": ["id"]
+            },
+            "fastq_1": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?q(\\.gz)?$",
+                "format": "file-path",
+                "errorMessage": "FastQ file for reads 1 (forward reads) must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'. If this is meant to be a run of nf-ViralMuations on MinION data, leave set the directory or fastq file under `long_reads`.",
+                "dependentRequired": ["fastq_2"],
+                "meta": ["fastq_1"],
+                "unique": true
+            },
+            "fastq_2": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?q(\\.gz)?$",
+                "format": "file-path",
+                "errorMessage": "FastQ file for reads 2 (reverse reads) cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
+                "meta": ["fastq_2"],
+                "unique": true
+            },
+            "long_reads": {
+                "type": "string",
+                "format": "file-path",
+                "errorMessage": "FastQ file for long reads must be provided, cannot contain spaces. If your data is not yet collated, put the path all the way to the folder containing the read files and set `MinION_Split` to `true`.",
+                "meta": ["long_reads"],
+                "unique": true
+            }
+        },
+        "required": ["sample"]
+    }
+}
