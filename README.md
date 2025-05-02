@@ -139,9 +139,9 @@ Virus3,/home/user/Data/Experiment3/Fastq/Samp2_S5_R1_001.fastq,/home/user/Data/E
 #### MinION
 
 MinION reads are usually stored in a folder called `fastq_pass` which contains a folder for each barcode (e.g. `barcode01`).
-If this is the case for your data, set `MinION_split` to `true` and the `fastq_1` column of the samplesheet to the path of the folder that contains the fastq files for that sample.
+If this is the case for your data, set `MinION_split` to `true` and the `longreads` column of the samplesheet to the path of the folder that contains the fastq files for that sample.
 
-If your data has already been collated and the read files have meaningful names, set `MinION_split` to `false` and the `fastq_1` column to the collated fastq file.
+If your data has already been collated and the read files have meaningful names, set `MinION_split` to `false` and the `longreads` column to the collated fastq file.
 If you data is collated but you want to change the sample names, put each read file in its own folder and follow the instructions for non-collated data.
 
 YAML example for non-collated data:
@@ -149,6 +149,14 @@ YAML example for non-collated data:
 ```YAML
 input: "/home/user/Data/Experiment2/no_sample/run_guid/samplesheet.csv"
 MinION_split: true
+```
+
+with the file `samplesheet.csv` looking like:
+
+```CSV
+sample,long_reads
+Samp1,/home/user/Data/Experiment3/fastq_pass/barcode02
+Virus3,/home/user/Data/Experiment3/fastq_pass/barcode05
 ```
 
 JSON example for pre-collated data:
@@ -176,7 +184,7 @@ If the bedpe file is already in the correct 6-column format, set `Primer_Format`
 
 ### Other parameters
 
-- `Result_Folder` defaults to `${launchDir}/Results`, but can be changed.
+- `outdir` defaults to `${launchDir}/Results`, but can be changed.
 - `Seq_Tech` should be either `Illumina` or `MinION`.
 - `Target_Reference` is the path to the viral genome you are aligning to. Since viral genomes are generally small, it is always re-indexed.
 - `Extension` specifies exactly what the extension of the original read files is, e.g.: `.fastq`, `.fa.gz`
@@ -190,7 +198,7 @@ If the bedpe file is already in the correct 6-column format, set `Primer_Format`
 
 ## Outputs
 
-Most intermediate files are saved into `Result_Folder` to allow QC of the different steps and to diagnose unexpected results.
+Most intermediate files are saved into `outdir` to allow QC of the different steps and to diagnose unexpected results.
 
 ### Key Outputs
 

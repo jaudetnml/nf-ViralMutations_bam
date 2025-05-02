@@ -4,6 +4,8 @@ include {
     TrimIllumina ;
 } from '../modules/preprocess.nf'
 
+include { fromSamplesheet } from 'plugin/nf-validation'
+
 workflow PreProcess {
     main:
     if (params.Seq_Tech == "MinION") {
@@ -12,9 +14,8 @@ workflow PreProcess {
         if (params.MinION_split) {
             RawReadFolders_ch = Channel.empty()
 
-            channel.fromPath("${params.input}", type: 'file')
-                | splitCsv(header: true)
-                | map { row -> tuple(row.sample, file(row.fastq_1, type: 'dir', checkIfExists: true))}
+            Channel.fromSamplesheet("input")
+                | map { row -> tuple(row.external_id[0], file(row.long_reads[0], type: 'dir', checkIfExists: true))}
                 | view()
                 | set { RawReadFolders_ch }
             CombineMinIONFastq(RawReadFolders_ch)
@@ -24,9 +25,8 @@ workflow PreProcess {
         else {
             MinION_reads_ch = Channel.empty()
 
-            channel.fromPath("${params.input}", type: 'file')
-                | splitCsv(header: true)
-                | map { row -> tuple(row.sample, file(row.fastq_1, checkIfExists: true))}
+            Channel.fromSamplesheet("input")
+                | map { row -> tuple(row.external_id[0], file(row.long_reads[0], checkIfExists: true))}
                 | view()
                 | set { MinION_reads_ch }
             TrimMinION(MinION_reads_ch)
@@ -36,9 +36,8 @@ workflow PreProcess {
     else {
         raw_reads_ch = Channel.empty()
 
-        channel.fromPath("${params.input}", type: 'file')
-                | splitCsv(header: true)
-                | map { row -> tuple(row.sample, file(row.fastq_1, checkIfExists: true), file(row.fastq_2, checkIfExists: true))}
+        Channel.fromSamplesheet("input")
+                | map { row -> tuple(row.external_id[0], file(row.fastq_1[0], checkIfExists: true), file(row.fastq_2[0], checkIfExists: true))}
                 | view()
                 | set { raw_reads_ch }
 

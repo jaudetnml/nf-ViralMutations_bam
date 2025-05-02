@@ -3,8 +3,8 @@ process Dedup {
         'https://depot.galaxyproject.org/singularity/samtools:1.17--hd87286a_2' :
         'biocontainers/samtools:1.17--hd87286a_2'}"
     tag { Name }
-    label 'CleanUp'
-    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
+    label 'process_medium'
+    publishDir "${params.outdir}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(aligned), file(index)
@@ -28,8 +28,8 @@ process Remove_secondaries {
         'https://depot.galaxyproject.org/singularity/samtools:1.17--hd87286a_2' :
         'biocontainers/samtools:1.17--hd87286a_2'}"
     tag { Name }
-    label 'CleanUp'
-    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
+    label 'process_low'
+    publishDir "${params.outdir}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(aligned), file(index)
@@ -49,8 +49,8 @@ process PrimerClip {
         'https://depot.galaxyproject.org/singularity/bamclipper:1.0.0--pl526_0' :
         'biocontainers/bamclipper:1.0.0--pl526_0'}"
     tag { Name }
-    label 'CleanUp'
-    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
+    label 'process_medium'
+    publishDir "${params.outdir}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(bam), file(bai), file(primer_locs)
@@ -75,8 +75,8 @@ process Downsample {
         'https://depot.galaxyproject.org/singularity/mulled-v2-bb5f3dab55f89ca6e9acdff899d8409efffcc444:949930df72decfcefd14c5d64ef58250f319589e-0' :
         'biocontainers/mulled-v2-bb5f3dab55f89ca6e9acdff899d8409efffcc444:949930df72decfcefd14c5d64ef58250f319589e-0'}"
     tag { Name }
-    label 'CleanUp'
-    publishDir "${params.Result_Folder}/${Name}/Alignments", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}/Alignments", mode: 'copy'
 
     input:
     tuple val(Name), file(bam), file(bai), file(depth)

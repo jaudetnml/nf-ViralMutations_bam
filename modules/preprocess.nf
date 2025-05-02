@@ -1,6 +1,7 @@
 process CombineMinIONFastq {
-    publishDir "${params.Result_Folder}/${SampleName}/Combined", pattern: "${SampleName}_combined.fastq.gz", mode: 'copy'
+    publishDir "${params.outdir}/${SampleName}/Combined", pattern: "${SampleName}_combined.fastq.gz", mode: 'copy'
     tag { SampleName }
+    label 'process_single'
 
     input:
     tuple val(SampleName), path(FOLDER)
@@ -24,10 +25,10 @@ process TrimIllumina {
         'https://depot.galaxyproject.org/singularity/fastp:0.24.0--heae3180_1' :
         'biocontainers/fastp:0.24.0--heae3180_1'}"
     tag { Name }
-    label 'TrimIllumina'
-    publishDir "${params.Result_Folder}/Trim", pattern: "*.fq.gz", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC/Raw", pattern: "*.json", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC", pattern: "*.html", mode: 'copy'
+    label 'process_medium'
+    publishDir "${params.outdir}/Trim", pattern: "*.fq.gz", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC/Raw", pattern: "*.json", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC", pattern: "*.html", mode: 'copy'
 
     input:
     tuple val(Name), file(reads1), file(reads2)
@@ -44,15 +45,14 @@ process TrimIllumina {
 }
 
 process TrimMinION {
-    cpus '16'
-    memory '8G'
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/fastplong:0.2.2--heae3180_0' :
         'biocontainers/fastplong:0.2.2--heae3180_0'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/Trim", pattern: "*.fastq.gz", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC/Raw", pattern: "*.json", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC", pattern: "*.html", mode: 'copy'
+    label 'process_medium'
+    publishDir "${params.outdir}/Trim", pattern: "*.fastq.gz", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC/Raw", pattern: "*.json", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC", pattern: "*.html", mode: 'copy'
 
     input:
     tuple val(Name), file(reads)
