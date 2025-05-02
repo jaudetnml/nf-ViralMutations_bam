@@ -151,6 +151,14 @@ input: "/home/user/Data/Experiment2/no_sample/run_guid/samplesheet.csv"
 MinION_split: true
 ```
 
+with the file `samplesheet.csv` looking like:
+
+```CSV
+sample,long_reads
+Samp1,/home/user/Data/Experiment3/fastq_pass/barcode02
+Virus3,/home/user/Data/Experiment3/fastq_pass/barcode05
+```
+
 JSON example for pre-collated data:
 
 ```JSON

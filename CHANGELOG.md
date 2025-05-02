@@ -13,6 +13,7 @@
   - The parameter `Data_Folder` has been removed.
 - Added profiles to the config, which allows easy toggle of SLURM and between Singularity/Apptainer/Docker and other systems.
 - The parameter `Result_Folder` is now `outdir` for compatibility with nf-core and IRIDA Next.
+- Parameter validation has been implemented, the pipeline will print non-default parameter values when it starts.
 
 ## Release 1.0.1 - 2025-04-01
 
