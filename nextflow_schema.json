@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/phac-nml/mikrokondo/main/nextflow_schema.json",
-    "title": "phac-nml/mikrokondo pipeline parameters",
-    "description": "Mikrokondo",
+    "$id": "https://raw.githubusercontent.com/phac-nml/nf-ViralMutations/main/nextflow_schema.json",
+    "title": "phac-nml/nf-ViralMutations pipeline parameters",
+    "description": "nf-ViralMutations",
     "type": "object",
     "definitions": {
         "input_output_options": {
@@ -45,7 +45,7 @@
                     ],
                     "description": "Sequencing platform used"
                 },
-                "MinION_Split": {
+                "MinION_split": {
                     "type": "boolean",
                     "default": false,
                     "description": "True if the nanopore reads have not been collated (e.g. 1 folder per barcode with a bunch of fastq files in it)."
@@ -140,6 +140,27 @@
                     "type": "integer",
                     "default": 2304,
                     "description": "The sum of the SAM Flag values for exclusion. A read with any of these flags will be filtered out. Default removes supplementary alignments and non-primary alignments."
+                }
+            }
+        },
+        "primers": {
+            "title": "Options related to primer trimming",
+            "type": "object",
+            "properties": {
+                "Primer_Locs": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "The path to a bed file with primer locations, with respect to the reference sequence used."
+                },
+                "Primer_Format": {
+                    "type": "string",
+                    "default": "bamclipper",
+                    "enum": [
+                        "bamclipper",
+                        "ARTIC"
+                    ],
+                    "description": "If the file is in the bamclipper 6-column format, then \"bamclipper\". If the file is in the ARTIC format, then \"ARTIC\"."
                 }
             }
         },
