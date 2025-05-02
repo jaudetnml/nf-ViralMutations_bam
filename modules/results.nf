@@ -3,7 +3,7 @@ process SnpCall {
         'https://depot.galaxyproject.org/singularity/freebayes:1.3.8--h6a68c12_2' :
         'biocontainers/freebayes:1.3.8--h6a68c12_2'}"
     tag { Name }
-    label 'process_single'
+    label 'process_single_long'
     publishDir "${params.outdir}/${Name}", pattern: "${Name}_variants.vcf", mode: 'copy'
 
     input:
