@@ -14,6 +14,8 @@
 - Added profiles to the config, which allows easy toggle of SLURM and between Singularity/Apptainer/Docker and other systems.
 - The parameter `Result_Folder` is now `outdir` for compatibility with nf-core and IRIDA Next.
 - Parameter validation has been implemented, the pipeline will print non-default parameter values when it starts.
+- The parameter `Singularity_cache` no longer exists, that was creating weird questions w.r.t. testing and we can let the software deal with that.
+- Added the data and files for minimal pipeline testing. The test profiles `test_MinION` and `test_Illumina` can be used.
 
 ## Release 1.0.1 - 2025-04-01
 

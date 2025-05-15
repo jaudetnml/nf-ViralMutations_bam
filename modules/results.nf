@@ -36,7 +36,7 @@ process SnpCall {
 }
 
 process MakeNiceVCF {
-    container 'docker://rocker/tidyverse:latest'
+    container 'docker://rocker/tidyverse:4.5.0'
     tag { Name }
     label 'process_single'
     publishDir "${params.outdir}/${Name}", pattern: "${Name}_clean.vcf", mode: 'copy'

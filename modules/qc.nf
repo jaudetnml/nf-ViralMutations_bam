@@ -62,7 +62,7 @@ process Depths {
 }
 
 process DepthGraph {
-    container 'docker://rocker/tidyverse:latest'
+    container 'docker://rocker/tidyverse:4.5.0'
     tag { Name }
     label 'process_single'
     publishDir "${params.outdir}/${Name}/QC", mode: 'copy'
