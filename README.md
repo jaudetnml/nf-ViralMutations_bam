@@ -188,7 +188,6 @@ If the bedpe file is already in the correct 6-column format, set `Primer_Format`
 - `Seq_Tech` should be either `Illumina` or `MinION`.
 - `Target_Reference` is the path to the viral genome you are aligning to. Since viral genomes are generally small, it is always re-indexed.
 - `Extension` specifies exactly what the extension of the original read files is, e.g.: `.fastq`, `.fa.gz`
-- `Singularity_cache` specifies where to store the containers for the pipeline, defaults to `${launchDir}`.
 - `SLURM_Queue` to specify the SLURM queue or partition to be used. Only used with the `slurm` profile.
 - `GenePos` (optional) an Excel file used to annotate the graph of SNPs with the following columns:
   - `CHR` The reference name.
