@@ -203,12 +203,6 @@
                     "type": "string",
                     "description": "The name of the SLURM partition to use for jobs."
                 },
-                "Singularity_cache": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "exists": true,
-                    "description": "The path to the folder where containers should be saved."
-                },
                 "max_cpus": {
                     "type": "integer",
                     "description": "Maximum number of CPUs that can be requested for any single job.",
