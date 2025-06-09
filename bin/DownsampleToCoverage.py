@@ -142,7 +142,8 @@ def GetReads(Ranges, Depths, RefFile, Target, Seed):
                     prev_end = overSeq[2] + 1
                 elif overSeq[0] != prev_name:
                     end = infile.get_reference_length(prev_name)
-                    keep += list(infile.fetch(prev_name, prev_end, end))
+                    if end > prev_end:
+                        keep += list(infile.fetch(prev_name, prev_end, end))
                     prev_end = 1
                     prev_name = overSeq[0]
                     if overSeq[1] > prev_end:
