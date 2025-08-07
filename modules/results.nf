@@ -131,7 +131,7 @@ process Consensus {
         sort -k1,1 -k2,2n mask.tsv > mask_sorted.tsv
         bgzip ${variants}
         tabix ${variants}.gz
-        cat ${reference} | sed "s/\\n\\n/\\n/g" | bcftools consensus -p ${Name}_ -I -H A -m mask_sorted.tsv ${variants}.gz > ${Name}_consensus.fasta
+        cat ${reference} | sed "/^\$/d" | bcftools consensus -p ${Name}_ -I -H A -m mask_sorted.tsv ${variants}.gz > ${Name}_consensus.fasta
     """
 }
 
