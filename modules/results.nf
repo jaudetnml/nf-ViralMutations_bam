@@ -125,12 +125,13 @@ process Consensus {
     tuple val(Name), file("${Name}_consensus.fasta")
 
     script:
+    minDepth = params.Consensus_MinDepth < params.SNP_MinDepth ? params.SNP_MinDepth : params.Consensus_MinDepth
     """
-        awk '\$3<${params.Consensus_MinDepth} {print}' ${depths} | cut -f1,2 > mask.tsv
+        awk '\$3<${minDepth} {print}' ${depths} | cut -f1,2 > mask.tsv
         sort -k1,1 -k2,2n mask.tsv > mask_sorted.tsv
         bgzip ${variants}
         tabix ${variants}.gz
-        cat ${reference} | bcftools consensus -p ${Name}_ -I -H A -m mask_sorted.tsv ${variants}.gz > ${Name}_consensus.fasta
+        cat ${reference} | sed "s/\\n\\n/\\n/g" | bcftools consensus -p ${Name}_ -I -H A -m mask_sorted.tsv ${variants}.gz > ${Name}_consensus.fasta
     """
 }
 
