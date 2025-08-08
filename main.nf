@@ -1,7 +1,5 @@
 nextflow.enable.dsl = 2
 
-include { Alignment  } from './workflows/alignment.nf'
-
 include { PreFlight  } from './workflows/preflight.nf'
 
 include { PreProcess } from './workflows/preprocess.nf'
