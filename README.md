@@ -4,12 +4,9 @@
 
 This pipeline is intended to be used to align Illumina or MinION reads to a reference and call the mutations and consensus.
 The mutations called include non-consensus mutations, which is useful when looking at the dynamics of the viral population over time.
-The pipeline is designed to allow a number of options for analysis:
 
-- Host removal (Illumina and MinION, non-competitive)
-- Primer clipping (position-based) (Illumina and MinION)
-- Targeted downsampling (only downsamples regions above the threshold) (Illumina and MinION)
-- The minimum depth and frequency thresholds can be adjusted separately for SNP reporting and consensus calling
+**This version of the pipeline is meant to start from 2 bam files that have been processed (deduplicated, filtered, primerclipped) and combine them.**
+The first processing step is to merge the BAM files and get the depth, everything downstream follows the original [nf-ViralMutations](phac-nml/nf-ViralMutations).
   
 The consensus will include IUPAC alternates if multiple alternate bases create a situation where neither an alternate nor the reference form consensus.
 
@@ -33,69 +30,6 @@ The full set of parameters are described in the comments in the `nextflow.config
 Some less simple ones are explained below.
 It is easier to assemble the pipeline parameters in a YAML or JSON file to be passed with the command line argument `-params-file`.
 
-### Host reference
-
-Since the hosts are usually eukaryotes, their large genome can take some time to index.
-To mitigate this, it is also possible to specify the location of the index files.
-
-#### For a new host reference
-
-Set the `Host_Reference` parameter to the full path of the fasta (gzipped or not) sequence and set the `Host_IndexOutFolder` parameter to the location where to save the index (generally the same folder as the reference). (YAML)
-
-```YAML
-Host_Reference: "/home/user/Hosts/Human_T2TY.fa.gz"
-Host_IndexOutFolder: "/home/user/Hosts"
-Host_Indexed: false
-Host_IndexFolder: ""
-```
-
-#### For a previously-indexed host reference
-
-Set the `Host_Reference` parameter to the __file name__ of the fasta sequence and set the `Host_IndexFolder` parameter to tha location that contains both the fasta file and the index files. (JSON)
-
-```JSON
-{
-    "Host_Reference": "Human_T2TY.fa.gz",
-    "Host_IndexOutFolder": "",
-    "Host_Indexed": true,
-    "Host_IndexFolder": "/home/user/Hosts"
-}
-```
-
-### Illumina adapter clipping
-
-Illumina adapter removal is performed using [fastp](https://github.com/OpenGene/fastp)/[fastplong](https://github.com/OpenGene/fastplong).
-Those tools also perform pre- and post-trimming read QC.
-It is possible to specify either the number of bases to clip from the 5' end of each base or the specific adapter sequences to trim (specify both).
-Custom trim arguments can be specified for both Illumina and MinION trimming.
-**Note that the rest of the pipeline is not designed to deal with merged reads, please do not activate this feature."
-
-To clip the first 14 bases from R2 (e.g. Takara stranded RNA prep, pico input): (YAML)
-
-```YAML
-    TrimArgs: "--trim_front2 14"
-```
-
-To also trim specific adapters from each read (e.g. Zymo Stranded RNA kit): (JSON)
-
-```JSON
-{
-    "TrimArgs": "--trim_front2 10 --adapter_sequence NNNNNNNNNNAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter_sequence_r2 AGATCGGAAGAGCGTCGTGTAGGGAAAGA"
-}
-```
-
-### Alignment filtering
-
-The alignments are filtered to, by default, remove secondary alignments and alignments with Map quality less than 30.
-To change those parameters: (JSON)
-
-```JSON
-{
-    "Read_MinMAPQ": 20,
-    "Read_ExclFLAG": 0x810
-}
-```
-
 ### snpEff configuration
 
 The pipeline uses snpEff to infer the effect of mutations.
@@ -113,22 +47,8 @@ If the annotations were modified and exported in a Windows software (e.g. DNASTA
 
 ### Input reads
 
-The `input` parameter takes a csv file that must have columns `sample` and `fastq_1`.
+The `input` parameter takes a csv file that must have columns `sample`, `bam_1`, `bam_2`.
 Absolute paths are generally preferred.
-
-#### Illumina
-
-For Illumina paired-end data (the pipeline does not expect Illumina single-end data), a `fastq_2` column is also needed.
-
-JSON example for Illumina data:
-
-```JSON
-{
-    "input": "/home/user/Data/Experiment3/samplesheet.csv"
-}
-```
-
-with the file `samplesheet.csv` looking like:
 
 ```CSV
 sample,fastq_1,fastq_2
@@ -136,58 +56,11 @@ Samp1,/home/user/Data/Experiment3/Fastq/Samp1_S1_R1_001.fastq,/home/user/Data/Ex
 Virus3,/home/user/Data/Experiment3/Fastq/Samp2_S5_R1_001.fastq,/home/user/Data/Experiment3/Fastq/Samp2_S5_R2_001.fastq
 ```
 
-#### MinION
-
-MinION reads are usually stored in a folder called `fastq_pass` which contains a folder for each barcode (e.g. `barcode01`).
-If this is the case for your data, set `MinION_split` to `true` and the `longreads` column of the samplesheet to the path of the folder that contains the fastq files for that sample.
-
-If your data has already been collated and the read files have meaningful names, set `MinION_split` to `false` and the `longreads` column to the collated fastq file.
-If you data is collated but you want to change the sample names, put each read file in its own folder and follow the instructions for non-collated data.
-
-YAML example for non-collated data:
-
-```YAML
-input: "/home/user/Data/Experiment2/no_sample/run_guid/samplesheet.csv"
-MinION_split: true
-```
-
-with the file `samplesheet.csv` looking like:
-
-```CSV
-sample,long_reads
-Samp1,/home/user/Data/Experiment3/fastq_pass/barcode02
-Virus3,/home/user/Data/Experiment3/fastq_pass/barcode05
-```
-
-JSON example for pre-collated data:
-
-```JSON
-{
-    "input": "/home/user/Data/Experiment3/no_sample/run_guid/samplesheet.csv",
-    "MinION_split": false
-}
-```
-
-### Primer clipping
-
-The pipeline uses BamClipper for positional primer clipping post-alignment.
-This utility uses a 6-column bedpe format to identify primer locations:
-
-RefName   FPrimerStart   FPrimerEnd  RefName   RPrimerStart   RPrimerEnd
-
-The parameter `Primer_Locs` takes a path to this bedpe file.
-If the bedpe file was generated by primalscheme or varVAMP, set `Primer_Format` to `ARTIC`.
-**Note that varVAMP's bed file reports primer positions according to the consensus of the alignment.**
-If the bedpe file is already in the correct 6-column format, set `Primer_Format` to `bamclipper`.
-
-**IMPORTANT: It is assumed that in the ARTIC format, Forward and Reverse primers are on sequential lines. If you have alternate forwards or reverses, pair them with the correct primer. You should not have a file with lines that go: FFRFRRFRFR.**
-
 ### Other parameters
 
 - `outdir` defaults to `${launchDir}/Results`, but can be changed.
 - `Seq_Tech` should be either `Illumina` or `MinION`.
 - `Target_Reference` is the path to the viral genome you are aligning to. Since viral genomes are generally small, it is always re-indexed.
-- `Extension` specifies exactly what the extension of the original read files is, e.g.: `.fastq`, `.fa.gz`
 - `SLURM_Queue` to specify the SLURM queue or partition to be used. Only used with the `slurm` profile.
 - `GenePos` (optional) an Excel file used to annotate the graph of SNPs with the following columns:
   - `CHR` The reference name.

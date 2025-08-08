@@ -44,16 +44,6 @@
                         "MinION"
                     ],
                     "description": "Sequencing platform used"
-                },
-                "MinION_split": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "True if the nanopore reads have not been collated (e.g. 1 folder per barcode with a bunch of fastq files in it)."
-                },
-                "Extension": {
-                    "type": "string",
-                    "default": ".fastq.gz",
-                    "description": "When MinION_Split is TRUE, specify the extension of the individual fastq files."
                 }
             }
         },
@@ -93,76 +83,6 @@
                 "SnpEff_Folder"
             ],
             "description": "The files and folders describing the target reference to align to."
-        },
-        "host_information": {
-            "title": "Host genome information (only if dehosting is required)",
-            "type": "object",
-            "properties": {
-                "Host_Reference": {
-                    "type": "string",
-                    "pattern": "^\\S+\\.f(ast|n)?a(\\.gz)?$",
-                    "description": "The name of the file which has the host genome."
-                },
-                "Host_Indexed": {
-                    "type": "boolean",
-                    "default": false,
-                    "desctiption": "Set to true if the host genome is already indexed (set the Host_IndexFolder) or false if the host genome needs to be indexed (set Host_IndexOutFolder)."
-                },
-                "Host_IndexFolder": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "exists": true,
-                    "description": "The folder where to find the index files for the host genome (e.g. *.fasta.mmi for MinION and the output files of BWA index for Illumina)."
-                },
-                "Host_IndexOutFolder": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "exists": false,
-                    "description": "If the genome is not already index, where to save the index files generated?"
-                }
-            },
-            "description": "The files and folders describing the host, if dehosting is desired."
-        },
-        "read_filtering_trimming": {
-            "title": "Read trimming and alignment filtering options.",
-            "type": "object",
-            "properties": {
-                "TrimArgs": {
-                    "type": "string",
-                    "description": "If you wish to add arguments to the fastp/fastplong command, add them here."
-                },
-                "Read_MinMAPQ": {
-                    "type": "integer",
-                    "default": 30,
-                    "description": "The minimum mapping quality for a read to be retained."
-                },
-                "Read_ExclFLAG": {
-                    "type": "integer",
-                    "default": 2304,
-                    "description": "The sum of the SAM Flag values for exclusion. A read with any of these flags will be filtered out. Default removes supplementary alignments and non-primary alignments."
-                }
-            }
-        },
-        "primers": {
-            "title": "Options related to primer trimming",
-            "type": "object",
-            "properties": {
-                "Primer_Locs": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "description": "The path to a bed file with primer locations, with respect to the reference sequence used."
-                },
-                "Primer_Format": {
-                    "type": "string",
-                    "default": "bamclipper",
-                    "enum": [
-                        "bamclipper",
-                        "ARTIC"
-                    ],
-                    "description": "If the file is in the bamclipper 6-column format, then \"bamclipper\". If the file is in the ARTIC format, then \"ARTIC\"."
-                }
-            }
         },
         "snp_consensus": {
             "title": "Options that control the requirements to report SNPs and call consensus.",
