@@ -84,6 +84,17 @@
             ],
             "description": "The files and folders describing the target reference to align to."
         },
+        "read_filtering_trimming": {
+            "title": "Read trimming and alignment filtering options.",
+            "type": "object",
+            "properties": {
+                "Read_MinMAPQ": {
+                    "type": "integer",
+                    "default": 30,
+                    "description": "The minimum mapping quality for a read to be retained."
+                }
+            }
+        },
         "snp_consensus": {
             "title": "Options that control the requirements to report SNPs and call consensus.",
             "type": "object",
