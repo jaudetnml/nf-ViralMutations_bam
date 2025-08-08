@@ -1,7 +1,5 @@
 include {
-    CombineMinIONFastq ;
-    TrimMinION ;
-    TrimIllumina ;
+    CombineBAM
 } from '../modules/preprocess.nf'
 
 include { fromSamplesheet } from 'plugin/nf-validation'
