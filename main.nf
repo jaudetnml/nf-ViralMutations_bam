@@ -38,8 +38,8 @@ workflow {
     reference_ch = Channel.fromPath(params.Target_Reference, type: 'file', checkIfExists: true)
     PreFlight()
     PreProcess()
-    CleanUp(PreProcess.pooled_reads)
-    Results(CleanUp.final_align, reference_ch, PreFlight.out.SnpEff_config, CleanUp.out.depths)
+    CleanUp(PreProcess.out.pooled_reads)
+    Results(CleanUp.out.final_align, reference_ch, PreFlight.out.SnpEff_config, CleanUp.out.depths)
     DepthGraph(CleanUp.out.depths)
     Results.out.snpEff_report
         | map(setFolder)
