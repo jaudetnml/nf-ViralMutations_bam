@@ -15,16 +15,16 @@ The consensus will include IUPAC alternates if multiple alternate bases create a
 
 ## Installation
 
-The two installation requirements are [Nextflow](https://www.nextflow.io/docs/latest/install.html) and a container platform (the pipeline uses [Singularity](https://docs.sylabs.io/guides/3.5/user-guide/quick_start.html#quick-installation-steps) by default).
+The two installation requirements are [Nextflow](https://www.nextflow.io/docs/latest/install.html) and a container platform (the pipeline has profiles for [Singularity](https://docs.sylabs.io/guides/3.5/user-guide/quick_start.html#quick-installation-steps) and [Apptainer](https://apptainer.org/)).
 
-The executor is set to `slurm` by default, this can be changed (e.g. setting `process.executor = 'local'` in the file `configs/resources.config`) if SLURM is not installed on your computer (or your HPC uses a different scheduler).
+A profile is also set up to use `slurm`, remember to set the `SLURM_Queue` parameter.
 
 ## Running the pipeline
 
 Assuming all the parameters are stored in a JSON or YAML file, navigate to the folder where you want the `nextflow` and `work` directories to be located and run the following command:
 
 ```shell
-nextflow run /path/to/nf-ViralMutations/main.nf -params-file /loc/of/Params_Exp1.yml
+nextflow run PHAC-NML/nf-ViralMutations -r v1.1.0 -params-file /loc/of/Params_Exp1.yml -profile singularity,slurm -with-report -with-dag
 ```
 
 ## Parameters
@@ -55,38 +55,33 @@ Set the `Host_Reference` parameter to the __file name__ of the fasta sequence an
 
 ```JSON
 {
-    Host_Reference: "Human_T2TY.fa.gz",
-    Host_IndexOutFolder: "",
-    Host_Indexed: true,
-    Host_IndexFolder: "/home/user/Hosts"
+    "Host_Reference": "Human_T2TY.fa.gz",
+    "Host_IndexOutFolder": "",
+    "Host_Indexed": true,
+    "Host_IndexFolder": "/home/user/Hosts"
 }
 ```
 
 ### Illumina adapter clipping
 
-Illumina adapter removal is performed using Trim-Galore!.
+Illumina adapter removal is performed using [fastp](https://github.com/OpenGene/fastp)/[fastplong](https://github.com/OpenGene/fastplong).
+Those tools also perform pre- and post-trimming read QC.
 It is possible to specify either the number of bases to clip from the 5' end of each base or the specific adapter sequences to trim (specify both).
+Custom trim arguments can be specified for both Illumina and MinION trimming.
+**Note that the rest of the pipeline is not designed to deal with merged reads, please do not activate this feature."
 
 To clip the first 14 bases from R2 (e.g. Takara stranded RNA prep, pico input): (YAML)
 
 ```YAML
-Illumina_clipR1: 0
-Illumina_clipR2: 14
+    TrimArgs: "--trim_front2 14"
 ```
 
-To trim specific adapters from each read (e.g. Zymo Stranded RNA kit): (JSON)
+To also trim specific adapters from each read (e.g. Zymo Stranded RNA kit): (JSON)
 
 ```JSON
 {
-    Illumina_adapt1: "NNNNNNNNNNAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
-    Illumina_adapt2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGA"
+    "TrimArgs": "--trim_front2 10 --adapter_sequence NNNNNNNNNNAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter_sequence_r2 AGATCGGAAGAGCGTCGTGTAGGGAAAGA"
 }
-```
-
-If you need to trim only one adapter or to specify other trimming options (leave a space at the end): (YAML)
-
-```YAML
-Illumina_TrimArgs: "-a NNNNNNNNNNAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC "
 ```
 
 ### Alignment filtering
@@ -96,8 +91,8 @@ To change those parameters: (JSON)
 
 ```JSON
 {
-    Read_MinMAPQ: 20,
-    Read_ExclFLAG: 0x810
+    "Read_MinMAPQ": 20,
+    "Read_ExclFLAG": 0x810
 }
 ```
 
@@ -116,33 +111,60 @@ The folder should have the same name as the name passed to snpEff and contain tw
 The easiest way to assemble this folder is to download the entries (selecting all of them for segmented genomes) from GenBank (or other repository) directly.
 If the annotations were modified and exported in a Windows software (e.g. DNASTAR's SeqBuilder), make sure the files have LF (and not CRLF) line endings.
 
-### MinION data
+### Input reads
+
+The `input` parameter takes a csv file that must have columns `sample` and `fastq_1`.
+Absolute paths are generally preferred.
+
+#### Illumina
+
+For Illumina paired-end data (the pipeline does not expect Illumina single-end data), a `fastq_2` column is also needed.
+
+JSON example for Illumina data:
+
+```JSON
+{
+    "input": "/home/user/Data/Experiment3/samplesheet.csv"
+}
+```
+
+with the file `samplesheet.csv` looking like:
+
+```CSV
+sample,fastq_1,fastq_2
+Samp1,/home/user/Data/Experiment3/Fastq/Samp1_S1_R1_001.fastq,/home/user/Data/Experiment3/Fastq/Samp1_S1_R2_001.fastq
+Virus3,/home/user/Data/Experiment3/Fastq/Samp2_S5_R1_001.fastq,/home/user/Data/Experiment3/Fastq/Samp2_S5_R2_001.fastq
+```
+
+#### MinION
 
 MinION reads are usually stored in a folder called `fastq_pass` which contains a folder for each barcode (e.g. `barcode01`).
-If this is the case for your data, set `MinION_split` to `true`.
-The `Data_Folder` should be set to a path all the way to (and including) `fastq_pass` or its equivalent folder.
-You will need to provide a csv file with two columns to the `MinION_samples` parameter (in order): 
+If this is the case for your data, set `MinION_split` to `true` and the `longreads` column of the samplesheet to the path of the folder that contains the fastq files for that sample.
 
-- `Sample_Name` a space-free sample name
-- `Barcode` the `barcodeXX` folder that contains the reads for that sample
-
-If your data has already been collated and the read files have meaningful names, set `MinION_split` to `false` and `Data_Folder` to the folder that contains the read files.
+If your data has already been collated and the read files have meaningful names, set `MinION_split` to `false` and the `longreads` column to the collated fastq file.
 If you data is collated but you want to change the sample names, put each read file in its own folder and follow the instructions for non-collated data.
 
 YAML example for non-collated data:
 
 ```YAML
-Data_Folder: "/home/user/Data/Experiment2/no_sample/run_guid/fastq_pass"
+input: "/home/user/Data/Experiment2/no_sample/run_guid/samplesheet.csv"
 MinION_split: true
-MinION_samples: "home/user/Data/Experiment2/no_sample/run_guid/samples.csv"
+```
+
+with the file `samplesheet.csv` looking like:
+
+```CSV
+sample,long_reads
+Samp1,/home/user/Data/Experiment3/fastq_pass/barcode02
+Virus3,/home/user/Data/Experiment3/fastq_pass/barcode05
 ```
 
 JSON example for pre-collated data:
 
 ```JSON
 {
-    Data_Folder: "/home/user/Data/Experiment3/no_sample/run_guid/collated_data",
-    MinION_split: false
+    "input": "/home/user/Data/Experiment3/no_sample/run_guid/samplesheet.csv",
+    "MinION_split": false
 }
 ```
 
@@ -162,13 +184,12 @@ If the bedpe file is already in the correct 6-column format, set `Primer_Format`
 
 ### Other parameters
 
-- `Result_Folder` defaults to `${params.Data_Folder}/../Results`, but can be changed.
+- `outdir` defaults to `${launchDir}/Results`, but can be changed.
 - `Seq_Tech` should be either `Illumina` or `MinION`.
 - `Target_Reference` is the path to the viral genome you are aligning to. Since viral genomes are generally small, it is always re-indexed.
 - `Extension` specifies exactly what the extension of the original read files is, e.g.: `.fastq`, `.fa.gz`
-- `Conda_cache` specifies where to store the conda environments for the pipeline, defaults to `${launchDir}`.
-- `SLURM_Queue` to specify the SLURM queue or partition to be used. The pipeline defaults to `executor="slurm"`, change it in the config file or at the command line if necessary.
-- `GenePos` (optional) an Excel file used to annotated the graph of SNPs with the following columns:
+- `SLURM_Queue` to specify the SLURM queue or partition to be used. Only used with the `slurm` profile.
+- `GenePos` (optional) an Excel file used to annotate the graph of SNPs with the following columns:
   - `CHR` The reference name.
   - `CDS_Name` The name to show on the graph. Assumes most annotation will be CDSs but doesn't check, so you can annotate any feature you want.
   - `Start` The 1-based position for the start of the CDS.
@@ -176,7 +197,7 @@ If the bedpe file is already in the correct 6-column format, set `Primer_Format`
 
 ## Outputs
 
-Most intermediate files are saved into `Result_Folder` to allow QC of the different steps and to diagnose unexpected results.
+Most intermediate files are saved into `outdir` to allow QC of the different steps and to diagnose unexpected results.
 
 ### Key Outputs
 

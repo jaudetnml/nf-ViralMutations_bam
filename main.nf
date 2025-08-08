@@ -16,10 +16,23 @@ include {
     Combine_QC
 } from './modules/qc.nf'
 
+include { validateParameters; paramsHelp; paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
+
+import org.slf4j.LoggerFactory;
+
 workflow {
+
+    //Shamelessly stolen from phac-nml/mikrokondo
+    def logger2 = LoggerFactory.getLogger(nextflow.script.ScriptBinding)
+    // This is working but if things get messy a better solution would be to look for a way to detach the console appender
+    logger2.setLevel(ch.qos.logback.classic.Level.ERROR)
+    validateParameters()
+    logger2.setLevel(ch.qos.logback.classic.Level.DEBUG)
+    log.info paramsSummaryLog(workflow)
+
     setFolder = {
         def sample = it[0]
-        def newPath = "${params.Result_Folder}/${sample}/QC/Raw"
+        def newPath = "${params.outdir}/${sample}/QC/Raw"
 
         return [it[0], it[1], it[2], newPath]
     }

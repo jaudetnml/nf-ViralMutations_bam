@@ -3,7 +3,8 @@ process SnpCall {
         'https://depot.galaxyproject.org/singularity/freebayes:1.3.8--h6a68c12_2' :
         'biocontainers/freebayes:1.3.8--h6a68c12_2'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", pattern: "${Name}_variants.vcf", mode: 'copy'
+    label 'process_single_long'
+    publishDir "${params.outdir}/${Name}", pattern: "${Name}_variants.vcf", mode: 'copy'
 
     input:
     tuple val(Name), file(bam), file(bai), file(reference)
@@ -14,7 +15,7 @@ process SnpCall {
     script:
     if (params.Seq_Tech == "Illumina") {
         """
-            freebayes -b ${bam} -f ${reference} --pooled-continuous -v ${Name}_variants.vcf -p 1 -B 3 -E -1 -F 0.005 --min-coverage 2
+            freebayes -b ${bam} -f ${reference} --pooled-continuous -v ${Name}_variants.vcf -p 1 -B 3 -E -1 -F 0.005 --min-coverage 1
             
             num_lines=\$( wc -l ${Name}_variants.vcf | cut -f1 -d ' ' )
             if [ \$num_lines -lt 65 ]; then
@@ -24,7 +25,7 @@ process SnpCall {
     }
     else {
         """
-            freebayes -b ${bam} -f ${reference} --pooled-continuous -v ${Name}_variants.vcf -m ${params.Read_MinMAPQ} -p 1 -B 3 -E -1 --haplotype-length -1 -F 0.03 --min-coverage 5
+            freebayes -b ${bam} -f ${reference} --pooled-continuous -v ${Name}_variants.vcf -m ${params.Read_MinMAPQ} -p 1 -B 3 -E -1 --haplotype-length -1 -F 0.03 --min-coverage 1
             
             num_lines=\$( wc -l ${Name}_variants.vcf | cut -f1 -d ' ' )
             if [ \$num_lines -lt 65 ]; then
@@ -35,10 +36,11 @@ process SnpCall {
 }
 
 process MakeNiceVCF {
-    container 'docker://rocker/tidyverse:latest'
+    container 'docker://rocker/tidyverse:4.5.0'
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", pattern: "${Name}_clean.vcf", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC", pattern: "${Name}_consensus.vcf", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", pattern: "${Name}_clean.vcf", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC", pattern: "${Name}_consensus.vcf", mode: 'copy'
 
     input:
     tuple val(Name), file(freebayes_vcf), file(basic_header)
@@ -62,8 +64,9 @@ process SnpEff {
         'https://depot.galaxyproject.org/singularity/snpeff:5.2--hdfd78af_1' :
         'biocontainers/snpeff:5.2--hdfd78af_1'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC/Raw", pattern: "${Name}_snpEff.csv", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC/Raw", pattern: "${Name}_snpEff.csv", mode: 'copy'
 
     input:
     tuple val(Name), file(vcf), file(snpEff_cfg), path(snpEff_folder)
@@ -92,7 +95,8 @@ process SnpEff {
 
 process FilterVCF {
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(vcf), file(mis_vcf), file(stop_vcf), file(updown_vcf), file(html), file(filterFile)
@@ -111,7 +115,8 @@ process Consensus {
         'https://depot.galaxyproject.org/singularity/bcftools:1.21--h8b25389_0' :
         'biocontainers/bcftools:1.21--h8b25389_0'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(variants), file(depths), file(reference)
@@ -120,12 +125,13 @@ process Consensus {
     tuple val(Name), file("${Name}_consensus.fasta")
 
     script:
+    minDepth = params.Consensus_MinDepth < params.SNP_MinDepth ? params.SNP_MinDepth : params.Consensus_MinDepth
     """
-        awk '\$3<${params.Consensus_MinDepth} {print}' ${depths} | cut -f1,2 > mask.tsv
+        awk '\$3<${minDepth} {print}' ${depths} | cut -f1,2 > mask.tsv
         sort -k1,1 -k2,2n mask.tsv > mask_sorted.tsv
         bgzip ${variants}
         tabix ${variants}.gz
-        cat ${reference} | bcftools consensus -p ${Name}_ -I -H A -m mask_sorted.tsv ${variants}.gz > ${Name}_consensus.fasta
+        cat ${reference} | sed "/^\$/d" | bcftools consensus -p ${Name}_ -I -H A -m mask_sorted.tsv ${variants}.gz > ${Name}_consensus.fasta
     """
 }
 
@@ -134,7 +140,8 @@ process Variant_Plot {
         'https://depot.galaxyproject.org/singularity/mulled-v2-ae2aedaf90918321f3e23bf48366c58c84aa4aa1:be6189ed69d26e8c2c00eaf8e8c9624f6b1c683f-0' :
         'biocontainers/mulled-v2-ae2aedaf90918321f3e23bf48366c58c84aa4aa1:be6189ed69d26e8c2c00eaf8e8c9624f6b1c683f-0'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/${Name}", mode: 'copy'
+    label 'process_single'
+    publishDir "${params.outdir}/${Name}", mode: 'copy'
 
     input:
     tuple val(Name), file(depths), file(variants_annot), file(geneName)

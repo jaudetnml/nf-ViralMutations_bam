@@ -1,9 +1,10 @@
 process CombineMinIONFastq {
-    publishDir "${params.Result_Folder}/${SampleName}/Combined", pattern: "${SampleName}_combined.fastq.gz", mode: 'copy'
+    publishDir "${params.outdir}/${SampleName}/Combined", pattern: "${SampleName}_combined.fastq.gz", mode: 'copy'
     tag { SampleName }
+    label 'process_single'
 
     input:
-    tuple val(SampleName), val(Barcode)
+    tuple val(SampleName), path(FOLDER)
 
     output:
     tuple val(SampleName), path("${SampleName}_combined.fastq.gz")
@@ -11,9 +12,9 @@ process CombineMinIONFastq {
     script:
     """
         if [[ "${params.Extension}" =~ .*gz ]]; then
-            gunzip -c ${params.Data_Folder}/${Barcode}/*${params.Extension} > ${SampleName}_combined.fastq
+            gunzip -c ${FOLDER}/*${params.Extension} > ${SampleName}_combined.fastq
         else
-            cat ${params.Data_Folder}/${Barcode}/*${params.Extension} > ${SampleName}_combined.fastq
+            cat ${FOLDER}/*${params.Extension} > ${SampleName}_combined.fastq
         fi
         gzip ${SampleName}_combined.fastq
     """
@@ -21,89 +22,47 @@ process CombineMinIONFastq {
 
 process TrimIllumina {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/trim-galore:0.6.10--hdfd78af_1' :
-        'biocontainers/trim-galore:0.6.10--hdfd78af_1'}"
+        'https://depot.galaxyproject.org/singularity/fastp:0.24.0--heae3180_1' :
+        'biocontainers/fastp:0.24.0--heae3180_1'}"
     tag { Name }
-    label 'TrimIllumina'
-    publishDir "${params.Result_Folder}/Trim", pattern: "*.fq.gz", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC/Raw", pattern: "*.txt", mode: 'copy'
+    label 'process_medium'
+    publishDir "${params.outdir}/Trim", pattern: "*.fq.gz", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC/Raw", pattern: "*.json", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC", pattern: "*.html", mode: 'copy'
 
     input:
-    tuple val(Name), file(reads)
+    tuple val(Name), file(reads1), file(reads2)
 
     output:
     tuple val(Name), file("${Name}_val_1.fq.gz"), file("${Name}_val_2.fq.gz"), emit: trim_reads_ch
-    tuple val(Name), file("*_trimming_report.txt"), emit: trim_report_ch
+    tuple val(Name), file("*_TrimReport.json"), file("*_TrimReport.html"), emit: trim_report_ch
 
     script:
     """
-        trim_galore -q 25 --gzip --max_n 5 --paired -j 4 ${params.Illumina_TrimArgs}--basename ${Name} ${reads[0]} ${reads[1]}
-    """
-}
-
-process TrimIlluminaClip {
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/trim-galore:0.6.10--hdfd78af_1' :
-        'biocontainers/trim-galore:0.6.10--hdfd78af_1'}"
-    tag { Name }
-    label 'TrimIllumina'
-    publishDir "${params.ResultFolder}/Trim", pattern: "*.fq.gz", mode: 'copy'
-    publishDir "${params.ResultFolder}/${Name}/QC/Raw", pattern: "*.txt", mode: 'copy'
-
-    input:
-    tuple val(Name), file(reads)
-
-    output:
-    tuple val(Name), file("${Name}_val_1.fq.gz"), file("${Name}_val_2.fq.gz"), emit: trim_reads_ch
-    tuple val(Name), file("*_trimming_report.txt"), emit: trim_report_ch
-
-    script:
-    """
-        trim_galore -q 25 --gzip --max_n 5 --paired -j 4 --clip_R1 ${params.Illumina_clipR1} --clip_R2 ${params.Illumina_clipR2} --basename ${Name} ${reads[0]} ${reads[1]}
-    """
-}
-
-process TrimIlluminaCustAdapt {
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/trim-galore:0.6.10--hdfd78af_1' :
-        'biocontainers/trim-galore:0.6.10--hdfd78af_1'}"
-    tag { Name }
-    label 'TrimIllumina'
-    publishDir "${params.ResultFolder}/Trim", pattern: "*.fq.gz", mode: 'copy'
-    publishDir "${params.ResultFolder}/${Name}/QC/Raw", pattern: "*.txt", mode: 'copy'
-
-    input:
-    tuple val(Name), file(reads)
-
-    output:
-    tuple val(Name), file("${Name}_val_1.fq.gz"), file("${Name}_val_2.fq.gz"), emit: trim_reads_ch
-    tuple val(Name), file("*_trimming_report.txt"), emit: trim_report_ch
-
-    script:
-    """
-        trim_galore -q 25 --gzip --max_n 5 -a ${params.Illumina_adapt1} -a2 ${params.Illumina_adapt2} --paired -j 4 --basename ${Name} ${reads[0]} ${reads[1]}
+         fastp -i ${reads1} -I ${reads2} -o ${Name}_val_1.fq.gz -O ${Name}_val_2.fq.gz\
+          -j ${Name}_TrimReport.json -h ${Name}_TrimReport.html -w ${task.cpus} ${params.TrimArgs}
     """
 }
 
 process TrimMinION {
-    cpus '16'
-    memory '8G'
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/porechop:0.2.3_seqan2.1.1--0' :
-        'biocontainers/porechop:0.2.3_seqan2.1.1--0'}"
+        'https://depot.galaxyproject.org/singularity/fastplong:0.2.2--heae3180_0' :
+        'biocontainers/fastplong:0.2.2--heae3180_0'}"
     tag { Name }
-    publishDir "${params.Result_Folder}/Trim", pattern: "*.fastq.gz", mode: 'copy'
-    publishDir "${params.Result_Folder}/${Name}/QC/Raw", pattern: "*.txt", mode: 'copy'
+    label 'process_medium'
+    publishDir "${params.outdir}/Trim", pattern: "*.fastq.gz", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC/Raw", pattern: "*.json", mode: 'copy'
+    publishDir "${params.outdir}/${Name}/QC", pattern: "*.html", mode: 'copy'
 
     input:
     tuple val(Name), file(reads)
 
     output:
     tuple val(Name), file("${Name}_trim.fastq.gz"), emit: trim_reads_ch
-    tuple val(Name), file("*porechop_log.txt"), emit: trim_report_ch
+    tuple val(Name), file("*_TrimReport.json"), file("*_TrimReport.html"), emit: trim_report_ch
 
     script:
     """
-        porechop -i ${reads} -o ${Name}_trim.fastq.gz -t ${task.cpus} --check_reads 1000 > ${Name}_porechop_log.txt
+        fastplong -i ${reads} -o ${Name}_trim.fastq.gz -w ${task.cpus} -m 10 -j ./${Name}_TrimReport.json -h ./${Name}_TrimReport.html  ${params.TrimArgs}
     """
 }

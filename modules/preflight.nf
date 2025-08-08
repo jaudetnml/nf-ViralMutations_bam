@@ -2,6 +2,7 @@ process CreateIndex {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bwa:0.7.18--he4a0461_1' :
         'biocontainers/bwa:0.7.18--he4a0461_1'}"
+    label 'process_single'
 
     input:
     path reference
@@ -20,6 +21,7 @@ process CreateHostIndex {
         'https://depot.galaxyproject.org/singularity/bwa:0.7.18--he4a0461_1' :
         'biocontainers/bwa:0.7.18--he4a0461_1'}"
     publishDir "${OutFolder}", mode: 'copy'
+    label 'process_high_memory'
 
     input:
     path reference
@@ -39,6 +41,7 @@ process CreateHostIndexMinION {
         'https://depot.galaxyproject.org/singularity/minimap2:2.28--he4a0461_3' :
         'biocontainers/minimap2:2.28--he4a0461_3'}"
     publishDir "${OutFolder}", mode: 'copy'
+    label 'process_high_memory'
 
     input:
     path reference
@@ -54,6 +57,9 @@ process CreateHostIndexMinION {
 }
 
 process GetIndex {
+    label 'process_single'
+    tag { referenceName }
+
     input:
     val index_dir
     val referenceName
@@ -72,6 +78,8 @@ process SetSnpEff {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/snpeff:5.2--hdfd78af_1' :
         'biocontainers/snpeff:5.2--hdfd78af_1'}"
+    label 'process_single'
+    tag { snpeff_name }
 
     input:
     path snpeff_dataFolder
@@ -93,6 +101,8 @@ process SetSnpEff {
 }
 
 process SwitchBedpe {
+    label 'process_single'
+
     input:
     path PrimerBed
 

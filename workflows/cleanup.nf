@@ -19,7 +19,8 @@ workflow CleanUp {
     primers_ch
 
     main:
-    depths_ch = channel.empty()
+    depths_ch = Channel.empty()
+    clean_out_ch = Channel.empty()
     if (params.Primer_Locs) {
         if (params.Seq_Tech == "Illumina") {
             aligned_reads_ch

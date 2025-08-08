@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## Release 1.1.0 - 2025-XX-XX
+
+### Changes
+- Switched read trimming to fastp/fastplong. These softwares also provide the pre- and post-trimming QC reports.
+  - Since all arguments are named (rather than positional), a single process is sufficient to add custom features to the trimming
+  - Since fastp/fastplong already provide QC reports (better ones than FastQC), the FastQC process was removed as well.
+- Switched input to a samplesheet.
+  - Passed to the `input` parameter, as per nf-core and IRIDA Next standards.
+  - Expects the 3 columns: `sample`,`fastq_1`,`fasq_2`
+    - For MinION, use the `longreads` column for the fastq file (if MinION_split is `false`) or the folder of fastqs (if MinION_split is `true`)
+  - The parameter `Data_Folder` has been removed.
+- Added profiles to the config, which allows easy toggle of SLURM and between Singularity/Apptainer/Docker and other systems.
+- The parameter `Result_Folder` is now `outdir` for compatibility with nf-core and IRIDA Next.
+- Parameter validation has been implemented, the pipeline will print non-default parameter values when it starts.
+- The parameter `Singularity_cache` no longer exists, that was creating weird questions w.r.t. testing and we can let the software deal with that.
+- Added the data and files for minimal pipeline testing. The test profiles `test_MinION` and `test_Illumina` can be used.
+
 ## Release 1.0.1 - 2025-04-01
 
 ### Fixes

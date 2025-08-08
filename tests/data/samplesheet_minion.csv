@@ -1,0 +1,2 @@
+sample,long_reads
+Musoke_MinION,https://github.com/phac-nml/nf-ViralMutations/raw/dev/tests/data/Musoke.fastq.gz
