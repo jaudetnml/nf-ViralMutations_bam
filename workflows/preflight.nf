@@ -10,3 +10,4 @@ workflow PreFlight{
 
     emit:
         SnpEff_config = SetSnpEff.out.ifEmpty("EMPTY")
+}
